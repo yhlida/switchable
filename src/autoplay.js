@@ -77,99 +77,99 @@
                     host._circle = false;
                 };
 
-            if (!cfg.autoplay || host.length <= 1) {
-                return;
-            }
-
-            // 初始化下一面板
-            setAfter(undefined, host.index);
-
-            // 悬停暂停
-            if (cfg.pauseOnHover) {
-                host.panels.on('mouseenter.switchAutoplay', function () {
-                    host._pause();
-                }).on('mouseleave.switchAutoplay', function () {
-                    if (!pausing) {
+                // 增加api
+                $.extend(host, {
+                    /**
+                     * 启动
+                     */
+                    _play: function () {
+                        host._cancelTimers();
+    
+                        // 让外部知道当前的状态
+                        host.paused = false;
+    
+                        // 让首次(或者暂停后恢复)切换和后续的自动切换的间隔时间保持一致
+                        timer1 = setTimeout(function () {
+                            run();
+                            autoRun();
+                        }, cfg.interval);
+                    },
+    
+                    /**
+                     * 暂停
+                     */
+                    _pause: function () {
+                        host._cancelTimers();
+    
+                        host.paused = true;
+                    },
+    
+                    /**
+                     * 取消切换定时器
+                     */
+                    _cancelTimers: function () {
+                        if (timer1) {
+                            clearTimeout(timer1);
+                            timer1 = undefined;
+                        }
+    
+                        if (timer2) {
+                            clearInterval(timer2);
+                            timer2 = undefined;
+                        }
+                    },
+    
+                    /**
+                     * 对外api, 使外部可以在暂停后恢复切换
+                     */
+                    play: function () {
                         host._play();
+                        pausing = false;
+                        return host;
+                    },
+    
+                    /**
+                     * 对外api, 使外部可以停止自动切换
+                     */
+                    pause: function () {
+                        host._pause();
+                        pausing = true;
+                        return host;
                     }
+
                 });
-            }
-
-            // 监听改变，设置下一面板
-            $(host).on('switch', setAfter);
-
-            // 增加api
-            $.extend(host, {
-                /**
-                 * 启动
-                 */
-                _play: function () {
-                    host._cancelTimers();
-
-                    // 让外部知道当前的状态
-                    host.paused = false;
-
-                    // 让首次(或者暂停后恢复)切换和后续的自动切换的间隔时间保持一致
-                    timer1 = setTimeout(function () {
-                        run();
-                        autoRun();
-                    }, cfg.interval);
-                },
-
-                /**
-                 * 暂停
-                 */
-                _pause: function () {
-                    host._cancelTimers();
-
-                    host.paused = true;
-                },
-
-                /**
-                 * 取消切换定时器
-                 */
-                _cancelTimers: function () {
-                    if (timer1) {
-                        clearTimeout(timer1);
-                        timer1 = undefined;
-                    }
-
-                    if (timer2) {
-                        clearInterval(timer2);
-                        timer2 = undefined;
-                    }
-                },
-
-                /**
-                 * 对外api, 使外部可以在暂停后恢复切换
-                 */
-                play: function () {
-                    host._play();
-                    pausing = false;
-                    return host;
-                },
-
-                /**
-                 * 对外api, 使外部可以停止自动切换
-                 */
-                pause: function () {
-                    host._pause();
-                    pausing = true;
-                    return host;
+    
+                if (!cfg.autoplay || host.length <= 1) {
+                    return;
                 }
-
-            });
-
-            // start autoplay
-            host._play();
-
-        },
-        destroy: function (host) {
-            if (!host.config.autoplay || host.length <= 1) {
-                return;
+    
+                // 初始化下一面板
+                setAfter(undefined, host.index);
+    
+                // 悬停暂停
+                if (cfg.pauseOnHover) {
+                    host.panels.on('mouseenter.switchAutoplay', function () {
+                        host._pause();
+                    }).on('mouseleave.switchAutoplay', function () {
+                        if (!pausing) {
+                            host._play();
+                        }
+                    });
+                }
+    
+                // 监听改变，设置下一面板
+                $(host).on('switch', setAfter);
+    
+                // start autoplay
+                host._play();
+    
+            },
+            destroy: function (host) {
+                if (!host.config.autoplay || host.length <= 1) {
+                    return;
+                }
+                host._pause();
+                host.panels.off(".switchAutoplay");
             }
-            host._pause();
-            host.panels.off(".switchAutoplay");
-        }
     });
 })(jQuery, window, document);
