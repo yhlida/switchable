@@ -77,27 +77,6 @@
                     host._circle = false;
                 };
 
-            if (!cfg.autoplay || host.length <= 1) {
-                return;
-            }
-
-            // 初始化下一面板
-            setAfter(undefined, host.index);
-
-            // 悬停暂停
-            if (cfg.pauseOnHover) {
-                host.panels.on('mouseenter.switchAutoplay', function () {
-                    host._pause();
-                }).on('mouseleave.switchAutoplay', function () {
-                    if (!pausing) {
-                        host._play();
-                    }
-                });
-            }
-
-            // 监听改变，设置下一面板
-            $(host).on('switch', setAfter);
-
             // 增加api
             $.extend(host, {
                 /**
@@ -159,6 +138,27 @@
                 }
 
             });
+				
+            if (!cfg.autoplay || host.length <= 1) {
+                return;
+            }
+
+            // 初始化下一面板
+            setAfter(undefined, host.index);
+
+            // 悬停暂停
+            if (cfg.pauseOnHover) {
+                host.panels.on('mouseenter.switchAutoplay', function () {
+                    host._pause();
+                }).on('mouseleave.switchAutoplay', function () {
+                    if (!pausing) {
+                        host._play();
+                    }
+                });
+            }
+
+            // 监听改变，设置下一面板
+            $(host).on('switch', setAfter);
 
             // start autoplay
             host._play();
